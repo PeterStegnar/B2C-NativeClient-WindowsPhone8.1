@@ -9,8 +9,10 @@
         public static string signUpPolicy = "B2C_1_todolist_signup";
         public static string editProfilePolicy = "B2C_1_todolist_profile";
 
-        public static string taskServiceUrl = "https://localhost:44321";
         public static string aadInstance = "https://login.microsoftonline.com/";
         public static string redirectUri = "urn:ietf:wg:oauth:2.0:oob";
+
+        public static string todoListBaseAddress = "https://y1wle-todolist-service.azurewebsites.net";
+
     }
 }

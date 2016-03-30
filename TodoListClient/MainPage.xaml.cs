@@ -47,15 +47,6 @@ namespace TodoListClient
 
         const string aadInstance = "https://login.microsoftonline.com/{0}";
         
-        //
-        // To authenticate to the To Do list service, the client needs to know the service's App ID URI.
-        // To contact the To Do list service we need it's URL as well.
-        //
-        const string todoListResourceId = "https://zeissb2cdev.onmicrosoft.com/TodoListService";
-        const string todoListBaseAddress = "https://localhost:44321";
-        const string todoListClientId = "2fead339-dfff-4a40-b0c6-0e3c9bc68f5b";
-        const string todoListAppKey = "0fgotpAaTSKj2vytTOswdDK/UQ0ykCCrfbLJyA8G+O0=";
-        
         private HttpClient httpClient = new HttpClient();
         private AuthenticationContext authContext = null;
 
@@ -71,10 +62,6 @@ namespace TodoListClient
             authContext = new AuthenticationContext(Globals.aadInstance + Globals.tenant);
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-        }
-
         #region Callbacks
         // Retrieve the user's To Do list.
         public async void GetTodoList(AuthenticationResult result)
@@ -83,7 +70,7 @@ namespace TodoListClient
             // Add the access token to the Authorization Header of the call to the To Do list service, and call the service.
             //
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(result.TokenType, result.Token);
-            HttpResponseMessage response = await httpClient.GetAsync(todoListBaseAddress + "/api/todolist");
+            HttpResponseMessage response = await httpClient.GetAsync(Globals.todoListBaseAddress + "/api/todolist");
 
             if (response.IsSuccessStatusCode)
             {
@@ -123,7 +110,7 @@ namespace TodoListClient
             HttpContent content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("Title", txtTodo.Text) });
 
             // Call the todolist web api
-            var response = await httpClient.PostAsync(todoListBaseAddress + "/api/todolist", content);
+            var response = await httpClient.PostAsync(Globals.todoListBaseAddress + "/api/todolist", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -159,35 +146,51 @@ namespace TodoListClient
 
             // Reset UI elements
             TodoList.ItemsSource = null;
-            //TodoText.Text = "";
+            SignInButton.Visibility = Visibility.Visible;
+            SignUpButton.Visibility = Visibility.Visible;
+            EditProfileButton.Visibility = Visibility.Collapsed;
+            SignOutButton.Visibility = Visibility.Collapsed;
+            UsernameLabel.Text = String.Empty;
         }
 
         // fetch the user's To Do list from the service. If no tokens are present in the cache, trigger the authentication experience before performing the call
         private async void RefreshAppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            //// Try to get a token without triggering any user prompt. 
-            //// ADAL will check whether the requested token is in the cache or can be obtained without user itneraction (e.g. via a refresh token).
-            //AuthenticationResult result = await authContext.AcquireTokenSilentAsync(new string[] { todoListResourceId }, Globals.clientId);
-            //if (result != null && result. == AuthenticationStatus.Success)
-            //{
-            //    // A token was successfully retrieved. Get the To Do list for the current user
-            //    GetTodoList(result);
-            //}
-            //else
-            //{
-            //    // Acquiring a token without user interaction was not possible. 
-            //    // Trigger an authentication experience and specify that once a token has been obtained the GetTodoList method should be called
-            //    authContext.AcquireTokenAndContinue(todoListResourceId, clientId, redirectURI, GetTodoList);
-            //}
+            AuthenticationResult result = await GetTokenSilent();
+
+            // A token was successfully retrieved. Get the To Do list for the current user
+            GetTodoList(result);
         }
         #endregion
+
+        private async Task<AuthenticationResult> GetTokenSilent()
+        {
+            //// Try to get a token without triggering any user prompt. 
+            //// ADAL will check whether the requested token is in the cache or can be obtained without user itneraction (e.g. via a refresh token).
+            AuthenticationResult result = null;
+            try
+            {
+                result = await authContext.AcquireTokenSilentAsync(new string[] { Globals.clientId }, Globals.clientId);
+            }
+            catch (AdalException ex)
+            {
+                string message = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    message += "Inner Exception : " + ex.InnerException.Message;
+                }
+
+                MessageDialog dialog = new MessageDialog(message);
+                await dialog.ShowAsync();
+            }
+
+            return result;
+        }
 
         // Post a new item to the To Do list. If no tokens are present in the cache, trigger the authentication experience before performing the call
         private async void btnAddTodo_Click(object sender, RoutedEventArgs e)
         {
-            //// Try to get a token without triggering any user prompt. 
-            //// ADAL will check whether the requested token is in the cache or can be obtained without user itneraction (e.g. via a refresh token).
-            AuthenticationResult result = await authContext.AcquireTokenSilentAsync(new string[] { todoListResourceId }, todoListClientId);
+            AuthenticationResult result = await GetTokenSilent();
 
             // A token was successfully retrieved. Post the new To Do item
             AddTodo(result);

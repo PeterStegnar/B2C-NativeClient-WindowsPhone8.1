@@ -17,7 +17,7 @@
         <!-- Title Panel -->
         <StackPanel Grid.Row="0" Margin="19,0,0,0">
             <TextBlock Text="B2C TODO LIST CLIENT" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
-            <TextBlock Text="to do list" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
+            <TextBlock Text="" x:Name="UsernameLabel" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
         </StackPanel>
 
         <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,20.833,19,-11">
@@ -28,7 +28,6 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="" x:Name="UsernameLabel" HorizontalAlignment="Left"></TextBlock>
                     <Button HorizontalAlignment="Right" Content="Sign Up" Margin="10,0,0,0" Click="SignUp" x:Name="SignUpButton" Width="80" Height="30"></Button>
                     <Button HorizontalAlignment="Right" Content="Sign In" Margin="10,0,0,0" Click="SignIn" x:Name="SignInButton" Width="80" Height="30"></Button>
                     <Button HorizontalAlignment="Right" Content="Edit Profile" Margin="10,0,0,0" Click="EditProfile" x:Name="EditProfileButton" Width="80" Height="30" Visibility="Collapsed"></Button>

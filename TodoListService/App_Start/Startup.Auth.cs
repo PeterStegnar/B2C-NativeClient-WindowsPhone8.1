@@ -1,39 +1,38 @@
-﻿//----------------------------------------------------------------------------------------------
-//    Copyright 2014 Microsoft Corporation
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-//----------------------------------------------------------------------------------------------
+﻿using Microsoft.Owin.Security.ActiveDirectory;
+using Microsoft.Owin.Security.Jwt;
+using Microsoft.Owin.Security.OAuth;
+using Owin;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IdentityModel.Tokens;
 using System.Linq;
-using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.ActiveDirectory;
-using Owin;
+using System.Text;
+using System.Threading.Tasks;
+using TodoListService.App_Start;
 
 namespace TodoListService
 {
-    public partial class Startup
-    {
         // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
-        public void ConfigureAuth(IAppBuilder app)
+        public partial class Startup
         {
-            app.UseWindowsAzureActiveDirectoryBearerAuthentication(
-                new WindowsAzureActiveDirectoryBearerAuthenticationOptions
+            public static string aadInstance = ConfigurationManager.AppSettings["ida:AadInstance"];
+            public static string tenant = ConfigurationManager.AppSettings["ida:Tenant"];
+            public static string clientId = ConfigurationManager.AppSettings["ida:ClientId"];
+            public static string commonPolicy = ConfigurationManager.AppSettings["ida:PolicyId"];
+            private const string discoverySuffix = ".well-known/openid-configuration";
+
+            public void ConfigureAuth(IAppBuilder app)
+            {
+                TokenValidationParameters tvps = new TokenValidationParameters
                 {
-                    Audience = ConfigurationManager.AppSettings["ida:Audience"],
-                    Tenant = ConfigurationManager.AppSettings["ida:Tenant"]
+                    ValidAudience = clientId,
+                };
+
+                app.UseOAuthBearerAuthentication(new OAuthBearerAuthenticationOptions
+                {
+                    AccessTokenFormat = new JwtFormat(tvps, new OpenIdConnectCachingSecurityTokenProvider(String.Format(aadInstance, tenant, "v2.0", discoverySuffix, commonPolicy)))
                 });
+            }
         }
-    }
 }
