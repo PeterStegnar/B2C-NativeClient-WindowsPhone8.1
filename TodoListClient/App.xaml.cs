@@ -40,8 +40,6 @@ namespace TodoListClient
     /// </summary>
     public sealed partial class App : Application
     {
-        ContinuationManager continuationManager;
-
         private TransitionCollection transitions;
 
         /// <summary>
@@ -169,32 +167,15 @@ namespace TodoListClient
         /// <summary>
         /// Handle OnActivated event to deal with File Open/Save continuation activation kinds
         /// </summary>
-        /// <param name="e">Application activated event arguments, it can be casted to proper sub-type based on ActivationKind</param>
-        protected override async void OnActivated(IActivatedEventArgs e)
+        /// <param name="args">Application activated event arguments, it can be casted to proper sub-type based on ActivationKind</param>
+        protected override void OnActivated(IActivatedEventArgs args)
         {
-            base.OnActivated(e);
-
-            continuationManager = new ContinuationManager();
-
-            Frame rootFrame = CreateRootFrame();
-
-            if (rootFrame.Content == null)
+            if(args is IWebAuthenticationBrokerContinuationEventArgs)
             {
-                rootFrame.Navigate(typeof(MainPage));
+                Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory.WebAuthenticationBrokerContinuationHelper.SetWebAuthenticationBrokerContinuationEventArgs(args as IWebAuthenticationBrokerContinuationEventArgs);
             }
 
-            var continuationEventArgs = e as IContinuationActivatedEventArgs;
-            if (continuationEventArgs != null)
-            {
-                Frame scenarioFrame = Window.Current.Content as Frame;
-                if (scenarioFrame != null)
-                {
-                    // Call ContinuationManager to handle continuation activation
-                    continuationManager.Continue(continuationEventArgs, scenarioFrame);
-                }
-            }
-
-            Window.Current.Activate();
+            base.OnActivated(args);
         }
 
 

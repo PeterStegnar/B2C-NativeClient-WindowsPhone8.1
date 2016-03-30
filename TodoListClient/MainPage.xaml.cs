@@ -28,17 +28,15 @@ using System.Net.Http.Headers;
 using Windows.Data.Json;
 using System.Linq;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
-
 namespace TodoListClient
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// The page implements IWebAuthenticationContinuable, as it is necessary for pages containing actions that can trigger authentication
     /// </summary>
-    public sealed partial class MainPage : Page, IWebAuthenticationContinuable
+    public sealed partial class MainPage : Page
     {
-#region init
+        #region init
 
         //
         // The Client ID is used by the application to uniquely identify itself to Azure AD.
@@ -60,66 +58,18 @@ namespace TodoListClient
         
         private HttpClient httpClient = new HttpClient();
         private AuthenticationContext authContext = null;
-        //private Uri redirectURI = null;
 
         #endregion
+
         public MainPage()
         {
             this.InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
-            //
-            // Every Windows Store application has a unique URI.
-            // Windows ensures that only this application will receive messages sent to this URI.
-            // ADAL uses this URI as the application's redirect URI to receive OAuth responses.
-            // 
-            // To determine this application's redirect URI, which is necessary when registering the app
-            //      in AAD, set a breakpoint on the next line, run the app, and copy the string value of the URI.
-            //      This is the only purposes of this line of code, it has no functional purpose in the application.
-            //
-            //redirectURI = Windows.Security.Authentication.Web.WebAuthenticationBroker.GetCurrentApplicationCallbackUri();
-
-            // ADAL for Windows Phone 8.1 builds AuthenticationContext instances throuhg a factory, which performs authority validation at creation time
+            // ADAL for Windows Phone 8.1 builds AuthenticationContext instances through a factory, which performs authority validation at creation time
             authContext = new AuthenticationContext(Globals.aadInstance + Globals.tenant);
         }
-
-        #region IWebAuthenticationContinuable implementation
-
-        // This method is automatically invoked when the application is reactivated after an authentication interaction through WebAuthenticationBroker.        
-        public async void ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
-        {
-            // take the authentication code received and acquire token for Service
-            string authCode = args.WebAuthenticationResult.ResponseData.Substring(args.WebAuthenticationResult.ResponseData.IndexOf("?code=") + 6);
-
-            var cred = new ClientCredential(todoListClientId, todoListAppKey);
-
-            try
-            {
-                var result = await authContext.AcquireTokenByAuthorizationCodeAsync(authCode, new Uri(todoListResourceId),
-                    cred, new string[] { todoListClientId });
-
-                UsernameLabel.Text = result.UserInfo.Name;
-
-                GetTodoList(result);
-            }
-            catch (AdalException ex)
-            {
-                // An unexpected error occurred.
-                string message = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    message += "Inner Exception : " + ex.InnerException.Message;
-                }
-
-                MessageDialog dialog = new MessageDialog(message);
-                await dialog.ShowAsync();
-
-                return;
-            }
-        }
-        #endregion
-        
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
