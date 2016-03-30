@@ -17,7 +17,7 @@
         <!-- Title Panel -->
         <StackPanel Grid.Row="0" Margin="19,0,0,0">
             <TextBlock Text="B2C TODO LIST CLIENT" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
-            <TextBlock Text="" x:Name="UsernameLabel" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
+            <TextBlock Text="" x:Name="UsernameLabel" Margin="0,0,0,5" Style="{ThemeResource SubheaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
         </StackPanel>
 
         <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,20.833,19,-11">
@@ -28,10 +28,10 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button HorizontalAlignment="Right" Content="Sign Up" Margin="10,0,0,0" Click="SignUp" x:Name="SignUpButton" Width="80" Height="30"></Button>
-                    <Button HorizontalAlignment="Right" Content="Sign In" Margin="10,0,0,0" Click="SignIn" x:Name="SignInButton" Width="80" Height="30"></Button>
-                    <Button HorizontalAlignment="Right" Content="Edit Profile" Margin="10,0,0,0" Click="EditProfile" x:Name="EditProfileButton" Width="80" Height="30" Visibility="Collapsed"></Button>
-                    <Button HorizontalAlignment="Right" Content="Sign Out" Margin="10,0,0,0" Click="SignOut" x:Name="SignOutButton" Width="80" Height="30" Visibility="Collapsed"></Button>
+                    <Button Content="Sign Up" Margin="10,0,0,0" Click="SignUp" x:Name="SignUpButton"></Button>
+                    <Button Content="Sign In" Margin="10,0,0,0" Click="SignIn" x:Name="SignInButton"></Button>
+                    <Button Content="Edit Profile" Margin="10,0,0,0" Click="EditProfile" x:Name="EditProfileButton" Visibility="Collapsed"></Button>
+                    <Button Content="Sign Out" Margin="10,0,0,0" Click="SignOut" x:Name="SignOutButton" Visibility="Collapsed"></Button>
                 </StackPanel>                
             </Grid>
             <Grid Grid.Row="1" x:Name="addTodo">  

@@ -13,44 +13,25 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 //----------------------------------------------------------------------------------------------
+using Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Activation;
+using Windows.Data.Json;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory;
-using System.Net.Http;
-using System.Globalization;
-using System.Net.Http.Headers;
-using Windows.Data.Json;
-using System.Linq;
 
 namespace TodoListClient
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// The page implements IWebAuthenticationContinuable, as it is necessary for pages containing actions that can trigger authentication
-    /// </summary>
     public sealed partial class MainPage : Page
     {
-        #region init
-
-        //
-        // The Client ID is used by the application to uniquely identify itself to Azure AD.
-        // The Tenant is the name of the Azure AD tenant in which this application is registered.
-        // The AAD Instance is the instance of Azure, for example public Azure or Azure China.
-        // The Authority is the sign-in URL of the tenant.
-        //
-
-        const string aadInstance = "https://login.microsoftonline.com/{0}";
-        
         private HttpClient httpClient = new HttpClient();
         private AuthenticationContext authContext = null;
-
-        #endregion
 
         public MainPage()
         {
@@ -163,6 +144,21 @@ namespace TodoListClient
         }
         #endregion
 
+        #region App operations
+
+        // Post a new item to the To Do list. If no tokens are present in the cache, trigger the authentication experience before performing the call
+        private async void btnAddTodo_Click(object sender, RoutedEventArgs e)
+        {
+            AuthenticationResult result = await GetTokenSilent();
+
+            // A token was successfully retrieved. Post the new To Do item
+            AddTodo(result);
+        }
+
+        #endregion
+
+        #region Account operations
+
         private async Task<AuthenticationResult> GetTokenSilent()
         {
             //// Try to get a token without triggering any user prompt. 
@@ -185,15 +181,6 @@ namespace TodoListClient
             }
 
             return result;
-        }
-
-        // Post a new item to the To Do list. If no tokens are present in the cache, trigger the authentication experience before performing the call
-        private async void btnAddTodo_Click(object sender, RoutedEventArgs e)
-        {
-            AuthenticationResult result = await GetTokenSilent();
-
-            // A token was successfully retrieved. Post the new To Do item
-            AddTodo(result);
         }
 
         private async void SignUp(object sender, RoutedEventArgs e)
@@ -274,16 +261,45 @@ namespace TodoListClient
 
                 return;
             }
+
+            if (result != null)
+                GetTodoList(result);
         }
 
-        private void EditProfile(object sender, RoutedEventArgs e)
+        private async void EditProfile(object sender, RoutedEventArgs e)
         {
+            AuthenticationResult result = null;
+            try
+            {
+                result = await authContext.AcquireTokenAsync(new string[] { Globals.clientId },
+                    null, Globals.clientId, new Uri(Globals.redirectUri),
+                    null, Globals.editProfilePolicy);
+            }
+            catch (AdalException ex)
+            {
+                // An unexpected error occurred.
+                string message = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    message += "Inner Exception : " + ex.InnerException.Message;
+                }
 
+                MessageDialog dialog = new MessageDialog(message);
+                await dialog.ShowAsync();
+            }
         }
 
         private void SignOut(object sender, RoutedEventArgs e)
         {
+            authContext.TokenCache.Clear();
+            SignInButton.Visibility = Visibility.Visible;
+            SignUpButton.Visibility = Visibility.Visible;
+            EditProfileButton.Visibility = Visibility.Collapsed;
+            SignOutButton.Visibility = Visibility.Collapsed;
+            UsernameLabel.Text = String.Empty;
 
         }
+
+        #endregion
     }
 }
